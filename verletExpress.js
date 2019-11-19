@@ -159,7 +159,7 @@ var VX = {
     }
   },
 
-  ///removes a skins by id
+  ///removes a skin by id
   removeSkin: function( id ) {
     for ( var i=0; i<VX.skins.length; i++ ){ 
       if ( VX.skins[i].id == id ) { VX.skins.splice(i,1); }
@@ -179,7 +179,7 @@ var VX = {
         p.cx += xv;  // updates current x with new velocity
         p.cy += yv;  // updates current y with new velocity
         p.cy += VX.gravity * p.mass;  // add gravity to y
-        if ( VX.worldTime % Tl.rib( 100, 200 ) == 0) { p.cx += Tl.rfb( -breeze, breeze ); }  // apply breeze to x
+        if ( VX.worldTime % rib( 100, 200 ) == 0 ) { p.cx += rfb( -breeze, breeze ); }  // apply breeze to x
       }
     }
   },
@@ -347,41 +347,59 @@ var VX = {
 
 
 
-
-
-
 }
+
+
+
+////--- HELPER FUNCTIONS ---////
+
+//random integer between two numbers (min/max inclusive)
+function rib( min, max ) {
+  return Math.floor( Math.random() * ( Math.floor(max) - Math.ceil(min) + 1 ) ) + Math.ceil(min);
+}
+
+//random float between two numbers
+function rfb( min, max ) {
+  return Math.random() * ( max - min ) + min;
+}
+
+
+
+
+
+
+
+
 
 
 
 ////////////////////////////////////////////////////////////////
 
 
-VX.addPoint( 0, 0 );
-VX.addPoint( 0, 10 );
-VX.addPoint( 10, 0 );
+// VX.addPoint( 0, 0 );
+// VX.addPoint( 0, 10 );
+// VX.addPoint( 10, 0 );
 
-VX.addSpan( 1, 2 );
-VX.addSpan( 2, 3 );
-VX.addSpan( 3, 1 );
+// VX.addSpan( 1, 2 );
+// VX.addSpan( 2, 3 );
+// VX.addSpan( 3, 1 );
 
-VX.addSkin( [ 1, 2, 3 ] );
-
-
-console.log( VX.skins.length );
-VX.removeSkin(1);
-console.log( VX.skins.length );
+// VX.addSkin( [ 1, 2, 3 ] );
 
 
+// console.log( VX.skins.length );
+// VX.removeSkin(1);
+// console.log( VX.skins.length );
 
 
 
 
+////////////////////////////////////////////////////////////////
 
 
 
 
-// ////---FUNCTIONS---////
+
 
 // ///scales canvas to window
 // function scaleToWindow() {
