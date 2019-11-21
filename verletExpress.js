@@ -9,6 +9,7 @@
 
 
  
+
 var VX = {
 
 
@@ -41,29 +42,6 @@ var VX = {
 
 
 
-  ////---INITIALIZATION---////
-
-
-  ///initializes physics environment
-  //dimensions can be "2d" or "3d"; 
-  //medium, used only for 2d, can be "canvas" or "svg"
-  //elementId should be an id associated with the target canvas or svg element
-  initialize: function( dimensions, medium, elementId ) {  
-    VX.dimensions = dimensions.toLowerCase();
-    if ( VX.dimensions == "2d") { VX.medium = medium.toLowerCase(); } else { VX.medium = null; }  // forces medium to null for 3d
-    if ( VX.medium == "canvas" ) { 
-      VX.canvas = document.getElementById( elementId );
-      VX.ctx = VX.canvas.getContext("2d");
-      VX.interfaceWidth = VX.canvas.width;  // interface width, 
-      VX.interfaceHeight = VX.canvas.height;  // 
-    } else if ( VX.medium == "svg" ) {
-      //...
-    }
-    VX.run();
-  },
-
-
-
   ////---OBJECTS---////
 
 
@@ -92,11 +70,11 @@ var VX = {
   },
 
   ///skins constructor
-  Skin: function( pointsArray, outlineColor="black", fillColor = "blue" ) {
+  Skin: function( pointIdArray, fillColor="blue", outlineColor="black" ) {
     VX.skinCount += 1;
-    this.points = pointsArray;  // an array of points for skin outline path
-    this.outlineColor = outlineColor;
+    this.points = pointIdArray;  // an array of points for skin outline path
     this.fillColor = fillColor;
+    this.outlineColor = outlineColor;
     this.id = VX.skinCount;
   },
 
@@ -104,20 +82,6 @@ var VX = {
 
   ////---FUNCTIONS---////
 
-
-  ///gets distance between two points
-  distance: function( point1, point2 ) {
-    var xDiff = point2.cx - point1.cx;
-    var yDiff = point2.cy - point1.cy;
-    return Math.sqrt( xDiff*xDiff + yDiff*yDiff );
-  },
-
-  ///gets a point by id number
-  getPoint: function( id ) {
-    for ( var i=0; i<VX.points.length; i++ ) { 
-      if ( VX.points[i].id == id ) { return VX.points[i]; }
-    }
-  },
 
   ///creates a point object instance
   addPoint: function( xValue, yValue, materiality="material" ) {
@@ -132,7 +96,7 @@ var VX = {
   },
 
   ///creates a skin object instance
-  addSkin: function( pointIdArray, outlineColor="black", fillColor = "blue" ) {
+  addSkin: function( pointIdArray, fillColor="blue", outlineColor="black" ) {
     var skinPointsArray = [];
     for ( var i=0; i<pointIdArray.length; i++ ) {
       for( var j=0; j<VX.points.length; j++ ){ 
@@ -141,7 +105,7 @@ var VX = {
         }
       }
     }
-    VX.skins.push( new VX.Skin( skinPointsArray, outlineColor, fillColor ) );
+    VX.skins.push( new VX.Skin( skinPointsArray, fillColor, outlineColor ) );
     return VX.skins[ VX.skins.length-1 ];
   },
 
@@ -166,6 +130,20 @@ var VX = {
     }
   },
 
+  ///gets distance between two points
+  distance: function( point1, point2 ) {
+    var xDiff = point2.cx - point1.cx;
+    var yDiff = point2.cy - point1.cy;
+    return Math.sqrt( xDiff*xDiff + yDiff*yDiff );
+  },
+
+  ///gets a point by id number
+  getPoint: function( id ) {
+    for ( var i=0; i<VX.points.length; i++ ) { 
+      if ( VX.points[i].id == id ) { return VX.points[i]; }
+    }
+  },
+
   ///updates point positions based on verlet velocity (i.e., current coord minus previous coord)
   updatePoints: function() {
     for ( var i=0; i<VX.points.length; i++ ) {
@@ -173,13 +151,13 @@ var VX = {
       if (!p.fixed) {
         var xv = (p.cx - p.px) * VX.friction;  // x velocity
         var yv = (p.cy - p.py) * VX.friction;  // y velocity
-        if ( p.py >= VX.yValue.max-p.width/2 ) { xv *= skidLoss; }
+        if ( p.py >= VX.yRange.max-p.width/2 ) { xv *= VX.skidLoss; }
         p.px = p.cx;  // updates previous x as current x
         p.py = p.cy;  // updates previous y as current y
         p.cx += xv;  // updates current x with new velocity
         p.cy += yv;  // updates current y with new velocity
         p.cy += VX.gravity * p.mass;  // add gravity to y
-        if ( VX.worldTime % rib( 100, 200 ) == 0 ) { p.cx += rfb( -breeze, breeze ); }  // apply breeze to x
+        if ( VX.worldTime % rib( 100, 200 ) == 0 ) { p.cx += rfb( -VX.breeze, VX.breeze ); }  // apply breeze to x
       }
     }
   },
@@ -187,28 +165,28 @@ var VX = {
   ///applies boundaries
   applyBoundaries: function() {
     for ( var i=0; i<VX.points.length; i++ ) {
-      var p = points[i];
+      var p = VX.points[i];
       var pr = p.width/2;  // point radius
       var xv = p.cx - p.px;  // x velocity
       var yv = p.cy - p.py;  // y velocity
       if ( p.materiality == "material" ) {
         //left boundary
-        if ( VX.xRange.min && p.cx < VX.xRange.min + pr ) {
+        if ( VX.xRange.min != null && p.cx < VX.xRange.min + pr ) {
           p.cx = VX.xRange.min + pr;  // move point back to boundary
           p.px = p.cx + xv * VX.bounceLoss;  // reverse velocity
         }
         //right boundary
-        if ( VX.xRange.max && p.cx > VX.xRange.max - pr ) { 
+        if ( VX.xRange.max != null && p.cx > VX.xRange.max - pr ) { 
           p.cx = VX.xRange.max - pr;
           p.px = p.cx + xv * VX.bounceLoss;
         }
         //ceiling
-        if ( VX.yRange.min && p.cy < VX.yRange.min + pr ) { 
+        if ( VX.yRange.min != null && p.cy < VX.yRange.min + pr ) { 
           p.cy = VX.yRange.min + pr;
           p.py = p.cy + yv * VX.bounceLoss;
         }
         //floor
-        if ( VX.yRange.max && p.cy > VX.yRange.max - pr ) {
+        if ( VX.yRange.max != null && p.cy > VX.yRange.max - pr ) {
           p.cy = VX.yRange.max - pr;
           p.py = p.cy + yv * VX.bounceLoss;
         }
@@ -299,11 +277,11 @@ var VX = {
       for ( var i=0; i<VX.skins.length; i++ ) {
         var s = VX.skins[i];
         VX.ctx.beginPath();
-        VX.ctx.strokeStyle = s.color;
+        VX.ctx.strokeStyle = s.strokeColor;
         VX.ctx.lineWidth = 0;
         VX.ctx.lineJoin = "round";
         VX.ctx.lineCap = "round";
-        VX.ctx.fillStyle = s.color;
+        VX.ctx.fillStyle = s.fillColor;
         VX.ctx.moveTo(s.points[0].cx, s.points[0].cy);
         for ( var j=1; j<s.points.length; j++) { VX.ctx.lineTo(s.points[j].cx, s.points[j].cy); }
         VX.ctx.lineTo(s.points[0].cx, s.points[0].cy);
@@ -318,7 +296,7 @@ var VX = {
   ///clears canvas frame
   clearInterface: function() {
     if ( VX.medium == "canvas" ) {
-      VX.ctx.clearRect(0, 0, interfaceWidth, interfaceHeight);
+      VX.ctx.clearRect(0, 0, VX.interfaceWidth, VX.interfaceHeight);
     } else if ( VX.medium == "svg" ) {
       //...
     }    
@@ -329,6 +307,33 @@ var VX = {
     if ( VX.viewSkins ) { VX.renderSkins(); }
     if ( VX.viewSpans ) { VX.renderSpans(); }
     if ( VX.viewPoints ) { VX.renderPoints(); }
+  },
+
+
+
+  ////---INITIALIZATION---////
+
+
+  ///initializes physics environment
+  //dimensions can be "2d" or "3d"; 
+  //medium, used only for 2d, can be "canvas" or "svg"
+  //targetElementId should be an id associated with the target canvas or svg element
+  initialize: function( dimensions, medium, targetElementId, interfaceWidth, interfaceHeight ) { 
+      VX.dimensions = dimensions.toLowerCase();
+      if ( VX.dimensions == "2d") { VX.medium = medium.toLowerCase(); } else { VX.medium = null; }  // forces medium to null for 3d
+      if ( VX.medium == "canvas" ) { 
+        VX.canvas = document.getElementById( targetElementId );
+        VX.ctx = VX.canvas.getContext("2d");
+        VX.interfaceWidth = interfaceWidth;
+        VX.interfaceHeight = interfaceHeight; 
+        VX.canvas.width = VX.interfaceWidth;
+        VX.canvas.height = VX.interfaceHeight;
+        VX.xRange = { min: 0, max: VX.interfaceWidth };
+        VX.yRange = { min: 0, max: VX.interfaceHeight };
+      } else if ( VX.medium == "svg" ) {
+        //...
+      }
+      VX.run();
   },
 
 
@@ -362,98 +367,6 @@ function rib( min, max ) {
 function rfb( min, max ) {
   return Math.random() * ( max - min ) + min;
 }
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////
-
-
-// VX.addPoint( 0, 0 );
-// VX.addPoint( 0, 10 );
-// VX.addPoint( 10, 0 );
-
-// VX.addSpan( 1, 2 );
-// VX.addSpan( 2, 3 );
-// VX.addSpan( 3, 1 );
-
-// VX.addSkin( [ 1, 2, 3 ] );
-
-
-// console.log( VX.skins.length );
-// VX.removeSkin(1);
-// console.log( VX.skins.length );
-
-
-
-
-////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-// ///scales canvas to window
-// function scaleToWindow() {
-//   if (window.innerWidth > window.innerHeight) {
-//     canvasContainerDiv.style.height = window.innerHeight*canvRatio+"px";
-//     canvasContainerDiv.style.width = canvasContainerDiv.style.height;
-//   } else {
-//     canvasContainerDiv.style.width = window.innerWidth*canvRatio+"px";
-//     canvasContainerDiv.style.height = canvasContainerDiv.style.width;
-//   }
-//   canvasPositionLeft = canvas.getBoundingClientRect().left + window.scrollX;
-//   canvasPositionTop = canvas.getBoundingClientRect().top + window.scrollY;
-// }
-
-// ///converts percentage to canvas x value
-// function xValFromPct(percent) {
-//   return percent * canvas.width / 100;
-// }
-
-// ///converts percentage to canvas y value
-// function yValFromPct(percent) {
-//   return percent * canvas.height / 100;
-// }
-
-// ///converts canvas x value to percentage of canvas width
-// function pctFromXVal(xValue) {
-//   return xValue * 100 / canvas.width;
-// }
-
-// ///converts canvas y value to percentage of canvas height
-// function pctFromYVal(yValue) {
-//   return yValue * 100 / canvas.height;
-// }
-
-// ///gets a span's mid point (returns object: { x: <value>, y: <value> } )
-// function spanMidPoint( span ) {
-//   var mx = ( span.p1.cx + span.p2.cx ) / 2;  // mid x value
-//   var my = ( span.p1.cy + span.p2.cy ) / 2;  // mid y value
-//   return { x: mx, y: my};
-// }
-
-// ///gets the mid point between two points (returns object: { x: <value>, y: <value> } )
-// function midPoint( point1, point2 ) {
-//   var mx = ( point1.cx + point2.cx ) / 2;  // mid x value
-//   var my = ( point1.cy + point2.cy ) / 2;  // mid y value
-//   return { x: mx, y: my};
-// }
-
-
-// ////---EVENTS---////
-
-// ///scaling
-// window.addEventListener('resize', scaleToWindow);
-
 
 
 
