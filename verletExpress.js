@@ -46,12 +46,14 @@ var VX = {
 
 
   ///point constructor
-  Point: function( currentX, currentY, materiality="material" ) {  // materiality can be "material" or "immaterial"
+  Point: function( coordinates, materiality="material" ) {  // materiality can be "material" or "immaterial"
     VX.pointCount += 1;
-    this.cx = currentX;
-    this.cy = currentY; 
+    this.cx = coordinates.x;
+    this.cy = coordinates.y; 
+    if ( coordinates.z != undefined ) { this.cz = coordinates.z; }
     this.px = this.cx;  // previous x value
     this.py = this.cy;  // previous y value
+    if ( coordinates.z != undefined ) { this.pz = this.cz; }  // previous z value
     this.mass = 1;  // (as ratio of gravity)
     this.width = 0;
     this.materiality = materiality;
@@ -84,8 +86,8 @@ var VX = {
 
 
   ///creates a point object instance
-  addPoint: function( xValue, yValue, materiality="material" ) {
-    VX.points.push( new VX.Point( xValue, yValue, materiality ) );
+  addPoint: function( coordinates, materiality="material" ) {
+    VX.points.push( new VX.Point( coordinates, materiality ) );
     return VX.points[ VX.points.length-1 ];
   },
 
@@ -134,7 +136,14 @@ var VX = {
   distance: function( point1, point2 ) {
     var xDiff = point2.cx - point1.cx;
     var yDiff = point2.cy - point1.cy;
-    return Math.sqrt( xDiff*xDiff + yDiff*yDiff );
+    var xyDist = Math.sqrt( xDiff*xDiff + yDiff*yDiff );
+    if ( VX.dimensions == "2d" ) {
+      return xyDist;
+    } else if ( VX.dimensions == "3d" ) {
+      var zDiff = point2.cz - point1.cz;
+      var xzDist = Math.sqrt( xyDist*xyDist + zDiff*zDiff );
+      return xzDist;
+    }
   },
 
   ///gets a point by id number
@@ -149,15 +158,23 @@ var VX = {
     for ( var i=0; i<VX.points.length; i++ ) {
       var p = VX.points[i];  // point object
       if (!p.fixed) {
+        //x
         var xv = (p.cx - p.px) * VX.friction;  // x velocity
-        var yv = (p.cy - p.py) * VX.friction;  // y velocity
-        if ( p.py >= VX.yRange.max-p.width/2 ) { xv *= VX.skidLoss; }
-        p.px = p.cx;  // updates previous x as current x
-        p.py = p.cy;  // updates previous y as current y
         p.cx += xv;  // updates current x with new velocity
+        p.px = p.cx;  // updates previous x as current x
+        if ( VX.worldTime % rib( 100, 200 ) == 0 ) { p.cx += rfb( -VX.breeze, VX.breeze ); }  // apply breeze to x
+        //y
+        var yv = (p.cy - p.py) * VX.friction;  // y velocity
         p.cy += yv;  // updates current y with new velocity
         p.cy += VX.gravity * p.mass;  // add gravity to y
-        if ( VX.worldTime % rib( 100, 200 ) == 0 ) { p.cx += rfb( -VX.breeze, VX.breeze ); }  // apply breeze to x
+        p.py = p.cy;  // updates previous y as current y
+        if ( p.py >= VX.yRange.max-p.width/2 ) { xv *= VX.skidLoss; }
+        //z
+        if ( p.cz != undefined ) { 
+          var zv = (p.cz - p.pz) * VX.friction; // z velocity
+          p.cz += zv;  // updates current z with new velocity
+          p.pz = p.cz;  // updates previous z as current z
+        }  
       }
     }
   },
@@ -169,26 +186,31 @@ var VX = {
       var pr = p.width/2;  // point radius
       var xv = p.cx - p.px;  // x velocity
       var yv = p.cy - p.py;  // y velocity
+      var zv = p.cz - p.pz;  // z velocity
       if ( p.materiality == "material" ) {
-        //left boundary
+        //left/right boundary
         if ( VX.xRange.min != null && p.cx < VX.xRange.min + pr ) {
           p.cx = VX.xRange.min + pr;  // move point back to boundary
           p.px = p.cx + xv * VX.bounceLoss;  // reverse velocity
-        }
-        //right boundary
-        if ( VX.xRange.max != null && p.cx > VX.xRange.max - pr ) { 
+        } else if ( VX.xRange.max != null && p.cx > VX.xRange.max - pr ) { 
           p.cx = VX.xRange.max - pr;
           p.px = p.cx + xv * VX.bounceLoss;
         }
-        //ceiling
+        //top/bottom boundary
         if ( VX.yRange.min != null && p.cy < VX.yRange.min + pr ) { 
           p.cy = VX.yRange.min + pr;
           p.py = p.cy + yv * VX.bounceLoss;
-        }
-        //floor
-        if ( VX.yRange.max != null && p.cy > VX.yRange.max - pr ) {
+        } else if ( VX.yRange.max != null && p.cy > VX.yRange.max - pr ) {
           p.cy = VX.yRange.max - pr;
           p.py = p.cy + yv * VX.bounceLoss;
+        }
+        //front/back boundary
+        if ( VX.zRange.min != null && p.cz < VX.zRange.min + pr ) { 
+          p.cz = VX.zRange.min + pr;
+          p.pz = p.cz + zv * VX.bounceLoss;
+        } else if ( VX.zRange.max != null && p.cz > VX.zRange.max - pr ) {
+          p.cz = VX.zRange.max - pr;
+          p.pz = p.cz + zv * VX.bounceLoss;
         }
       }
     }
@@ -202,19 +224,24 @@ var VX = {
         var s = VX.spans[i];
         var dx = s.p2.cx - s.p1.cx;  // distance between x values
         var dy = s.p2.cy - s.p1.cy;  // distance between y values
-        var d = Math.sqrt( dx*dx + dy*dy);  // distance between the points
+        var dz = s.p2.cz - s.p1.cz;  // distance between z values
+        var d = VX.distance( s.p1, s.p2 );
         var r = s.l / d;  // ratio (span length over distance between points)
         var mx = s.p1.cx + dx / 2;  // midpoint between x values 
         var my = s.p1.cy + dy / 2;  // midpoint between y values
+        var mz = s.p1.cz + dz / 2;  // midpoint between z values
         var ox = dx / 2 * r;  // offset of each x value (compared to span length)
         var oy = dy / 2 * r;  // offset of each y value (compared to span length)
+        var oz = dz / 2 * r;  // offset of each z value (compared to span length)
         if ( !s.p1.fixed ) {
           s.p1.cx = mx - ox;  // updates span's first point x value
           s.p1.cy = my - oy;  // updates span's first point y value
+          if ( VX.dimensions == "3d" ) { s.p1.cz = mz - oz; }  // updates span's first point z value
         }
         if ( !s.p2.fixed ) {
           s.p2.cx = mx + ox;  // updates span's second point x value
           s.p2.cy = my + oy;  // updates span's second point y value
+          if ( VX.dimensions == "3d" ) { s.p2.cz = mz - oz; }  // updates span's first point z value
         }
       }
     }
@@ -316,12 +343,16 @@ var VX = {
 
   ///initializes physics environment
   //dimensions can be "2d" or "3d"; 
-  //medium, used only for 2d, can be "canvas" or "svg"
-  //targetElementId should be an id associated with the target canvas or svg element
+  //medium (2d only) can be "canvas" or "svg"
+  //targetElementId (2d only) should be an id associated with the target canvas or svg element
+  //interfaceWidth/Height (2d only) will set the canvas or svg element's dimensions
   initialize: function( dimensions, medium, targetElementId, interfaceWidth, interfaceHeight ) { 
-      VX.dimensions = dimensions.toLowerCase();
-      if ( VX.dimensions == "2d") { VX.medium = medium.toLowerCase(); } else { VX.medium = null; }  // forces medium to null for 3d
-      if ( VX.medium == "canvas" ) { 
+    VX.dimensions = dimensions.toLowerCase();
+    //2D
+    if ( VX.dimensions == "2d") { 
+      VX.medium = medium.toLowerCase(); 
+      //canvas
+      if ( VX.medium == "canvas" ) {
         VX.canvas = document.getElementById( targetElementId );
         VX.ctx = VX.canvas.getContext("2d");
         VX.interfaceWidth = interfaceWidth;
@@ -330,10 +361,17 @@ var VX = {
         VX.canvas.height = VX.interfaceHeight;
         VX.xRange = { min: 0, max: VX.interfaceWidth };
         VX.yRange = { min: 0, max: VX.interfaceHeight };
+      //svg
       } else if ( VX.medium == "svg" ) {
         //...
       }
-      VX.run();
+    //3D
+    } else if ( VX.dimensions == "3d" ) {
+      VX.xRange = { min: null, max: null };
+      VX.yRange = { min: null, max: null };
+      VX.zRange = { min: null, max: null };
+    }
+    VX.run();
   },
 
 
