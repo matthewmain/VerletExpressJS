@@ -50,10 +50,10 @@ var VX = {
     VX.pointCount += 1;
     this.cx = coordinates.x;
     this.cy = coordinates.y; 
-    if ( coordinates.z != undefined ) { this.cz = coordinates.z; }
+    if ( VX.dimensions = "3d" ) { this.cz = coordinates.z; }
     this.px = this.cx;  // previous x value
     this.py = this.cy;  // previous y value
-    if ( coordinates.z != undefined ) { this.pz = this.cz; }  // previous z value
+    if ( VX.dimensions = "3d" ) { this.pz = this.cz; }  // previous z value
     this.mass = 1;  // (as ratio of gravity)
     this.width = 0;
     this.materiality = materiality;
@@ -157,24 +157,29 @@ var VX = {
   updatePoints: function() {
     for ( var i=0; i<VX.points.length; i++ ) {
       var p = VX.points[i];  // point object
-      if (!p.fixed) {
+      if ( !p.fixed ) {
         //x
         var xv = (p.cx - p.px) * VX.friction;  // x velocity
-        p.cx += xv;  // updates current x with new velocity
         p.px = p.cx;  // updates previous x as current x
-        if ( VX.worldTime % rib( 100, 200 ) == 0 ) { p.cx += rfb( -VX.breeze, VX.breeze ); }  // apply breeze to x
+        p.cx += xv;  // updates current x with new velocity
+        if ( VX.worldTime % VX.rib( 100, 200 ) == 0 ) { p.cx += VX.rfb( -VX.breeze, VX.breeze ); }  // apply breeze to x
         //y
         var yv = (p.cy - p.py) * VX.friction;  // y velocity
-        p.cy += yv;  // updates current y with new velocity
-        p.cy += VX.gravity * p.mass;  // add gravity to y
         p.py = p.cy;  // updates previous y as current y
-        if ( p.py >= VX.yRange.max-p.width/2 ) { xv *= VX.skidLoss; }
+        if ( VX.dimensions == "2d") { p.cy += VX.gravity * p.mass; } else { p.cy -= VX.gravity * p.mass; }  // apply gravity
+        p.cy += yv;  // updates current y with new velocity
         //z
-        if ( p.cz != undefined ) { 
+        if ( VX.dimensions == "3d" ) { 
           var zv = (p.cz - p.pz) * VX.friction; // z velocity
-          p.cz += zv;  // updates current z with new velocity
           p.pz = p.cz;  // updates previous z as current z
-        }  
+          p.cz += zv;  // updates current z with new velocity
+        }
+        //skidloss
+        if ( VX.dimensions == "3d" ) {  // apply skidloss to x
+          if ( VX.yRange.min != null && p.cy <= VX.yRange.min+p.width/2 ) { xv *= VX.skidLoss; zv *= VX.skidLoss; }  
+        } else if ( VX.dimensions == "2d" ) {
+          if ( VX.yRange.max != null && p.cy >= VX.yRange.max-p.width/2 ) { xv *= VX.skidLoss; }  
+        }
       }
     }
   },
@@ -241,7 +246,7 @@ var VX = {
         if ( !s.p2.fixed ) {
           s.p2.cx = mx + ox;  // updates span's second point x value
           s.p2.cy = my + oy;  // updates span's second point y value
-          if ( VX.dimensions == "3d" ) { s.p2.cz = mz - oz; }  // updates span's first point z value
+          if ( VX.dimensions == "3d" ) { s.p2.cz = mz + oz; }  // updates span's second point z value
         }
       }
     }
@@ -336,16 +341,22 @@ var VX = {
     if ( VX.viewPoints ) { VX.renderPoints(); }
   },
 
+  ///random integer between two numbers (min/max inclusive)
+  rib: function( min, max ) {
+    return Math.floor( Math.random() * ( Math.floor(max) - Math.ceil(min) + 1 ) ) + Math.ceil(min);
+  },
+
+  ///random float between two numbers
+  rfb: function( min, max ) {
+    return Math.random() * ( max - min ) + min;
+  },
+
 
 
   ////---INITIALIZATION---////
 
 
   ///initializes physics environment
-  //dimensions can be "2d" or "3d"; 
-  //medium (2d only) can be "canvas" or "svg"
-  //targetElementId (2d only) should be an id associated with the target canvas or svg element
-  //interfaceWidth/Height (2d only) will set the canvas or svg element's dimensions
   initialize: function( dimensions, medium, targetElementId, interfaceWidth, interfaceHeight ) { 
     VX.dimensions = dimensions.toLowerCase();
     //2D
@@ -390,20 +401,6 @@ var VX = {
 
 
 
-}
-
-
-
-////--- HELPER FUNCTIONS ---////
-
-//random integer between two numbers (min/max inclusive)
-function rib( min, max ) {
-  return Math.floor( Math.random() * ( Math.floor(max) - Math.ceil(min) + 1 ) ) + Math.ceil(min);
-}
-
-//random float between two numbers
-function rfb( min, max ) {
-  return Math.random() * ( max - min ) + min;
 }
 
 
