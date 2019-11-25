@@ -50,10 +50,10 @@ var VX = {
     VX.pointCount += 1;
     this.cx = coordinates.x;
     this.cy = coordinates.y; 
-    if ( VX.dimensions = "3d" ) { this.cz = coordinates.z; }
+    if ( VX.dimensions == "3d" ) { this.cz = coordinates.z; }
     this.px = this.cx;  // previous x value
     this.py = this.cy;  // previous y value
-    if ( VX.dimensions = "3d" ) { this.pz = this.cz; }  // previous z value
+    if ( VX.dimensions == "3d" ) { this.pz = this.cz; }  // previous z value
     this.mass = 1;  // (as ratio of gravity)
     this.width = 0;
     this.materiality = materiality;
