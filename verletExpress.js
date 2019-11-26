@@ -158,28 +158,28 @@ var VX = {
     for ( var i=0; i<VX.points.length; i++ ) {
       var p = VX.points[i];  // point object
       if ( !p.fixed ) {
-        //x
-        var xv = (p.cx - p.px) * VX.friction;  // x velocity
+        //stores velocity
+        var xv = ( p.cx - p.px ) * VX.friction;  // x velocity
+        var yv = ( p.cy - p.py ) * VX.friction;  // y velocity
+        if ( VX.dimensions == "3d" ) { var zv = ( p.cz - p.pz ) * VX.friction; } // z velocity
+        //verlet
         p.px = p.cx;  // updates previous x as current x
-        p.cx += xv;  // updates current x with new velocity
-        if ( VX.worldTime % VX.rib( 100, 200 ) == 0 ) { p.cx += VX.rfb( -VX.breeze, VX.breeze ); }  // apply breeze to x
-        //y
-        var yv = (p.cy - p.py) * VX.friction;  // y velocity
         p.py = p.cy;  // updates previous y as current y
-        if ( VX.dimensions == "2d") { p.cy += VX.gravity * p.mass; } else { p.cy -= VX.gravity * p.mass; }  // apply gravity
-        p.cy += yv;  // updates current y with new velocity
-        //z
-        if ( VX.dimensions == "3d" ) { 
-          var zv = (p.cz - p.pz) * VX.friction; // z velocity
-          p.pz = p.cz;  // updates previous z as current z
-          p.cz += zv;  // updates current z with new velocity
-        }
+        if ( VX.dimensions == "3d" ) { p.pz = p.cz; }  // updates previous z as current z
         //skidloss
-        if ( VX.dimensions == "3d" ) {  // apply skidloss to x
+        if ( VX.dimensions == "3d" ) {  
           if ( VX.yRange.min != null && p.cy <= VX.yRange.min+p.width/2 ) { xv *= VX.skidLoss; zv *= VX.skidLoss; }  
         } else if ( VX.dimensions == "2d" ) {
           if ( VX.yRange.max != null && p.cy >= VX.yRange.max-p.width/2 ) { xv *= VX.skidLoss; }  
         }
+        //applies velocity
+        p.cx += xv; 
+        p.cy += yv; 
+        if ( VX.dimensions == "3d" ) { p.cz += zv; }
+        //gravity
+        if ( VX.dimensions == "2d") { p.cy += VX.gravity * p.mass; } else { p.cy -= VX.gravity * p.mass; } 
+        //breeze
+        if ( VX.worldTime % VX.rib( 100, 200 ) == 0 ) { p.cx += VX.rfb( -VX.breeze, VX.breeze ); }  
       }
     }
   },
