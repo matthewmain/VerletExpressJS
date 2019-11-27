@@ -1,0 +1,36 @@
+body {
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#container_div {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+*:focus {
+  outline: none;
+}
+
+#canvas_div {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#canvas-element {
+  position: absolute;
+  right: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(50%,-50%);
+  border: solid 3px #000000;
+  background: #222222;
+}
