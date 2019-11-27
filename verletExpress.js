@@ -61,22 +61,25 @@ var VX = {
     this.id = VX.pointCount;
   },
 
-  ///span constructor
+  ///span constructor (arguments can be point objects or point ids)
   Span: function( point1, point2 ) {
     VX.spanCount += 1;
-    this.p1 = point1;
-    this.p2 = point2;
+    if ( Number.isInteger( point1 ) ) { this.p1 = VX.getPoint( point1 ); } else { this.p1 = point1; }
+    if ( Number.isInteger( point2 ) ) { this.p2 = VX.getPoint( point2 ); } else { this.p2 = point2; }
     this.l = VX.distance( this.p1, this.p2 ); // length
     this.strength = 1;  // (as ratio of rigidity)
     this.id = VX.spanCount;
   },
 
-  ///skins constructor
-  Skin: function( pointIdArray, fillColor="blue", outlineColor="black" ) {
+  ///skins constructor 
+  //pointsArray can be an array of point objects or point ids
+  //stylesObject: {fillColor: <string>, outlineColor: <string>, outlineThickness: <string>}
+  Skin: function( pointsArray, stylesObject ) {
     VX.skinCount += 1;
-    this.points = pointIdArray;  // an array of points for skin outline path
-    this.fillColor = fillColor;
-    this.outlineColor = outlineColor;
+    this.points = pointsArray;  // an array of points for skin outline path (can be point objects or point ids)
+    this.fillColor = stylesObject.fillColor;
+    this.outlineColor = stylesObject.outlineColor;
+    this.outlineThickness = stylesObject.outlineThickness;
     this.id = VX.skinCount;
   },
 
@@ -91,23 +94,26 @@ var VX = {
     return VX.points[ VX.points.length-1 ];
   },
 
-  ///creates a span object instance
-  addSpan: function( point1Id, point2Id ) {
-    VX.spans.push( new VX.Span( VX.getPoint( point1Id ), VX.getPoint( point2Id ) ) );
+  ///creates a span object instance (arguments can be point objects or point ids)
+  addSpan: function( point1, point2 ) {
+    VX.spans.push( new VX.Span( point1, point2 ) );
     return VX.spans[ VX.spans.length-1 ];
   },
 
-  ///creates a skin object instance
-  addSkin: function( pointIdArray, fillColor="blue", outlineColor="black" ) {
+  ///creates a skin object instance 
+  //pointsArray can be an array of point objects or point ids
+  //stylesObject: {fillColor: <string>, outlineColor: <string>, outlineThickness: <string>}
+  addSkin: function( pointsArray, stylesObject ) {
     var skinPointsArray = [];
-    for ( var i=0; i<pointIdArray.length; i++ ) {
+    for ( var i=0; i<pointsArray.length; i++ ) {
       for( var j=0; j<VX.points.length; j++ ){ 
-        if ( VX.points[j].id == pointIdArray[i] ) { 
+        var pointId = Number.isInteger(pointsArray[i]) ? VX.getPoint(pointsArray[i]).id : pointsArray[i].id;
+        if ( VX.points[j].id == pointId ) { 
           skinPointsArray.push( VX.points[j] ); 
         }
       }
     }
-    VX.skins.push( new VX.Skin( skinPointsArray, fillColor, outlineColor ) );
+    VX.skins.push( new VX.Skin( skinPointsArray, stylesObject ) );
     return VX.skins[ VX.skins.length-1 ];
   },
 
@@ -308,30 +314,57 @@ var VX = {
     if ( VX.medium == "canvas" ) {
       for ( var i=0; i<VX.skins.length; i++ ) {
         var s = VX.skins[i];
-        VX.ctx.beginPath();
-        VX.ctx.strokeStyle = s.strokeColor;
-        VX.ctx.lineWidth = 0;
         VX.ctx.lineJoin = "round";
         VX.ctx.lineCap = "round";
+        VX.ctx.beginPath();
         VX.ctx.fillStyle = s.fillColor;
+        VX.ctx.strokeStyle = s.outlineColor;
+        VX.ctx.lineWidth = s.outlineThickness;
         VX.ctx.moveTo(s.points[0].cx, s.points[0].cy);
         for ( var j=1; j<s.points.length; j++) { VX.ctx.lineTo(s.points[j].cx, s.points[j].cy); }
         VX.ctx.lineTo(s.points[0].cx, s.points[0].cy);
         VX.ctx.stroke();
         VX.ctx.fill();  
       }
-    } else if ( VX.medium == "svg" ) {
-      //...
+    } else if ( VX.medium == "svg") {
+      if ( !VX.svgSkinsAddedToDOM ) {
+        for ( var i=0; i<VX.skins.length; i++ ) {
+          var s = VX.skins[i];
+          var skinPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          skinPath.classList.add("skin");
+          skinPath.id = "sk"+s.id;
+          skinPath.style.fill = s.fillColor;
+          skinPath.style.stroke = s.outlineColor;
+          skinPath.style.strokeWidth = s.outlineThickness;
+          var pathString = "M" + (s.points[0].cx) + "," + s.points[0].cy + " ";
+          for ( var j=1; j<s.points.length; j++ ) {
+            pathString += "L" + (s.points[j].cx) + "," + s.points[j].cy + " ";
+          }
+          pathString += "Z";
+          skinPath.setAttribute("d", pathString );
+          VX.svg.appendChild( skinPath );
+          VX.svgSkinsAddedToDOM = true;
+        }
+      } else {
+        for ( var i=0; i<VX.skins.length; i++ ) {
+          var s = VX.skins[i];
+          var skinPath = document.getElementById("sk"+s.id);  // gets svg element by id value
+          var pathString = "M" + (s.points[0].cx) + "," + s.points[0].cy + " ";
+          for (j=1; j<s.points.length; j++) {
+            pathString += "L" + (s.points[j].cx) + "," + s.points[j].cy + " ";
+          }
+          pathString += "Z";
+          skinPath.setAttribute("d", pathString);
+        }
+      }
     }
   },
 
   ///clears canvas frame
-  clearInterface: function() {
+  clearCanvas: function() {
     if ( VX.medium == "canvas" ) {
       VX.ctx.clearRect(0, 0, VX.interfaceWidth, VX.interfaceHeight);
-    } else if ( VX.medium == "svg" ) {
-      //...
-    }    
+    }   
   },
 
   ///renders all visible components
@@ -351,6 +384,9 @@ var VX = {
     return Math.random() * ( max - min ) + min;
   },
 
+  ///runs every frame refresh (an empty function in which to add custom scripts)
+  runOnFrameRefresh: function() { },
+
 
 
   ////---INITIALIZATION---////
@@ -362,19 +398,21 @@ var VX = {
     //2D
     if ( VX.dimensions == "2d") { 
       VX.medium = medium.toLowerCase(); 
+      VX.interfaceWidth = interfaceWidth;
+      VX.interfaceHeight = interfaceHeight; 
+      VX.xRange = { min: 0, max: VX.interfaceWidth };
+      VX.yRange = { min: 0, max: VX.interfaceHeight };
       //canvas
       if ( VX.medium == "canvas" ) {
         VX.canvas = document.getElementById( targetElementId );
         VX.ctx = VX.canvas.getContext("2d");
-        VX.interfaceWidth = interfaceWidth;
-        VX.interfaceHeight = interfaceHeight; 
         VX.canvas.width = VX.interfaceWidth;
         VX.canvas.height = VX.interfaceHeight;
-        VX.xRange = { min: 0, max: VX.interfaceWidth };
-        VX.yRange = { min: 0, max: VX.interfaceHeight };
       //svg
       } else if ( VX.medium == "svg" ) {
-        //...
+        VX.svg = document.getElementById( targetElementId );
+        VX.svg.setAttribute("viewBox", `0 0 ${VX.interfaceWidth} ${VX.interfaceHeight}` );
+        VX.svgSkinsAddedToDOM = false;
       }
     //3D
     } else if ( VX.dimensions == "3d" ) {
@@ -389,12 +427,12 @@ var VX = {
 
   ////---EXECUTION---////
 
-
   run: function() {
     VX.updatePoints();
     VX.refinePositions();
-    VX.clearInterface();
+    VX.clearCanvas();
     VX.renderImages();
+    VX.runOnFrameRefresh();
     VX.worldTime++;
     window.requestAnimationFrame( VX.run );
   },
