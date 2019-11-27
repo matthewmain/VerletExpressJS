@@ -17,12 +17,12 @@ var VX = {
   ////---SETTINGS---////
 
 
-  viewPoints: false,  // point visibility
-  viewSpans: false,  // span visibility
-  viewSkins: true, // skin visibility
-  xRange: { min: null, max: null },  // min and max x values (objects bounce at set values; use null for infinite space )
-  yRange: { min: null, max: null },  // min and max y values (objects bounce at set values; use null for infinite space )
-  zRange: { min: null, max: null },  // min and max z values (objects bounce at set values; use null for infinite space ) 
+  viewPoints: false,  // point visibility (2D)
+  viewSpans: false,  // span visibility (2D)
+  viewSkins: true, // skin visibility (2D)
+  xRange: { min: null, max: null },  // min & max x values (objects bounce at values; null is infinite space
+  yRange: { min: null, max: null },  // min & max y values (objects bounce at values; null is infinite space
+  zRange: { min: null, max: null },  // min & max z values (objects bounce at values; null is infinite space 
   gravity: 0.01,  // rate of y-velocity increase per frame per point mass of 1
   rigidity: 5,  // global span rigidity (as iterations of position accuracy refinement)
   friction: 0.999,  // proportion of previous velocity after frame refresh
@@ -48,16 +48,16 @@ var VX = {
   ///point constructor
   Point: function( coordinates, materiality="material" ) {  // materiality can be "material" or "immaterial"
     VX.pointCount += 1;
-    this.cx = coordinates.x;
-    this.cy = coordinates.y; 
-    if ( VX.dimensions == "3d" ) { this.cz = coordinates.z; }
+    this.cx = coordinates.x;  // current x value
+    this.cy = coordinates.y;  // current y value
+    if ( VX.dimensions == "3d" ) { this.cz = coordinates.z; }  // current z value
     this.px = this.cx;  // previous x value
     this.py = this.cy;  // previous y value
     if ( VX.dimensions == "3d" ) { this.pz = this.cz; }  // previous z value
     this.mass = 1;  // (as ratio of gravity)
     this.width = 0;
-    this.materiality = materiality;
-    this.fixed = false;
+    this.materiality = materiality;  // "material" points collide with obstacles; "immaterial" points don't
+    this.fixed = false;  // whether the point moves in response to physics or remains in a fixed position
     this.id = VX.pointCount;
   },
 
@@ -72,8 +72,6 @@ var VX = {
   },
 
   ///skins constructor 
-  //pointsArray can be an array of point objects or point ids
-  //stylesObject: {fillColor: <string>, outlineColor: <string>, outlineThickness: <string>}
   Skin: function( pointsArray, stylesObject ) {
     VX.skinCount += 1;
     this.points = pointsArray;  // an array of points for skin outline path (can be point objects or point ids)
@@ -101,8 +99,6 @@ var VX = {
   },
 
   ///creates a skin object instance 
-  //pointsArray can be an array of point objects or point ids
-  //stylesObject: {fillColor: <string>, outlineColor: <string>, outlineThickness: <string>}
   addSkin: function( pointsArray, stylesObject ) {
     var skinPointsArray = [];
     for ( var i=0; i<pointsArray.length; i++ ) {
@@ -168,11 +164,11 @@ var VX = {
         var xv = ( p.cx - p.px ) * VX.friction;  // x velocity
         var yv = ( p.cy - p.py ) * VX.friction;  // y velocity
         if ( VX.dimensions == "3d" ) { var zv = ( p.cz - p.pz ) * VX.friction; } // z velocity
-        //verlet
+        //applies verlet
         p.px = p.cx;  // updates previous x as current x
         p.py = p.cy;  // updates previous y as current y
         if ( VX.dimensions == "3d" ) { p.pz = p.cz; }  // updates previous z as current z
-        //skidloss
+        //applies skidloss
         if ( VX.dimensions == "3d" ) {  
           if ( VX.yRange.min != null && p.cy <= VX.yRange.min+p.width/2 ) { xv *= VX.skidLoss; zv *= VX.skidLoss; }  
         } else if ( VX.dimensions == "2d" ) {
@@ -182,15 +178,15 @@ var VX = {
         p.cx += xv; 
         p.cy += yv; 
         if ( VX.dimensions == "3d" ) { p.cz += zv; }
-        //gravity
+        //applies gravity
         if ( VX.dimensions == "2d") { p.cy += VX.gravity * p.mass; } else { p.cy -= VX.gravity * p.mass; } 
-        //breeze
+        //applies breeze
         if ( VX.worldTime % VX.rib( 100, 200 ) == 0 ) { p.cx += VX.rfb( -VX.breeze, VX.breeze ); }  
       }
     }
   },
 
-  ///applies boundaries
+  ///applies boundaries (objects bounce off of walls)
   applyBoundaries: function() {
     for ( var i=0; i<VX.points.length; i++ ) {
       var p = VX.points[i];
@@ -281,7 +277,7 @@ var VX = {
         var p = VX.points[i];
         var radius = p.width >= 2 ? p.width/2 : 1;
         VX.ctx.beginPath();
-        VX.ctx.fillStyle = "red";
+        VX.ctx.fillStyle = "blue";
         VX.ctx.arc( p.cx, p.cy, radius, 0 , Math.PI*2 );
         VX.ctx.fill(); 
       }
@@ -298,7 +294,7 @@ var VX = {
         if ( s.visibility == "visible" ) {
           VX.ctx.beginPath();
           VX.ctx.lineWidth = 1;
-          VX.ctx.strokeStyle = "blue";
+          VX.ctx.strokeStyle = "red";
           VX.ctx.moveTo(s.p1.cx, s.p1.cy);
           VX.ctx.lineTo(s.p2.cx, s.p2.cy);
           VX.ctx.stroke(); 
@@ -367,7 +363,7 @@ var VX = {
     }   
   },
 
-  ///renders all visible components
+  ///renders all visible components (2D)
   renderImages: function() {
     if ( VX.viewSkins ) { VX.renderSkins(); }
     if ( VX.viewSpans ) { VX.renderSpans(); }
