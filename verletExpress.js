@@ -282,7 +282,30 @@ var VX = {
         VX.ctx.fill(); 
       }
     } else if ( VX.medium == "svg" ) {
-      //...
+      if ( !VX.svgPointsAddedToDOM ) {
+        for ( var i=0; i<VX.points.length; i++ ) {
+          var p = VX.points[i];
+          var pointCircle = document.createElementNS( "http://www.w3.org/2000/svg", "circle" );
+          pointCircle.classList.add( "point" );
+          pointCircle.id = "pt"+p.id;
+          pointCircle.fill = "blue";
+          pointCircle.cx = p.cx;
+          pointCircle.cy = p.cy;
+          pointCircle.r = "1";
+          VX.svg.appendChild( pointCircle );
+          VX.svgPointsAddedToDOM = true;
+        }
+      } else {
+        for ( var i=0; i<VX.points.length; i++ ) {
+          var p = VX.points[i];
+          var pointCircle = document.getElementById( "pt"+p.id );
+          pointCircle.setAttribute( "fill", "blue" );
+          pointCircle.setAttribute( "cx", p.cx );
+          pointCircle.setAttribute( "cy", p.cy );
+          pointCircle.setAttribute( "r", 1 );
+        }
+      }
+
     }
   },
 
@@ -291,17 +314,35 @@ var VX = {
     if ( VX.medium == "canvas" ) {
       for ( var i=0; i<VX.spans.length; i++ ) {
         var s = VX.spans[i];
-        if ( s.visibility == "visible" ) {
-          VX.ctx.beginPath();
-          VX.ctx.lineWidth = 1;
-          VX.ctx.strokeStyle = "red";
-          VX.ctx.moveTo(s.p1.cx, s.p1.cy);
-          VX.ctx.lineTo(s.p2.cx, s.p2.cy);
-          VX.ctx.stroke(); 
-        }
+        VX.ctx.beginPath();
+        VX.ctx.lineWidth = "1";
+        VX.ctx.strokeStyle = "lightgray";
+        VX.ctx.moveTo(s.p1.cx, s.p1.cy);
+        VX.ctx.lineTo(s.p2.cx, s.p2.cy);
+        VX.ctx.stroke(); 
       }
     } else if ( VX.medium == "svg" ) {
-      //...
+      if ( !VX.svgSpansAddedToDOM ) {
+        for ( var i=0; i<VX.spans.length; i++ ) {
+          var s = VX.spans[i];
+          var spanPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          spanPath.classList.add( "span" );
+          spanPath.id = "sp"+s.id;
+          spanPath.style.stroke = "lightgray";
+          spanPath.style.strokeWidth = "1";
+          var pathString = "M" + s.p1.cx + "," + s.p1.cy + " " + "L" + s.p2.cx + "," + s.p2.cy + " " + "Z";
+          spanPath.setAttribute("d", pathString );
+          VX.svg.appendChild( spanPath );
+          VX.svgSpansAddedToDOM = true;
+        }
+      } else {
+        for ( var i=0; i<VX.spans.length; i++ ) {
+          var s = VX.spans[i];
+          var spanPath = document.getElementById("sp"+s.id);
+          var pathString = "M" + s.p1.cx + "," + s.p1.cy + " " + "L" + s.p2.cx + "," + s.p2.cy + " " + "Z";
+          spanPath.setAttribute("d", pathString);
+        }
+      }
     }
   },
 
@@ -408,6 +449,8 @@ var VX = {
       } else if ( VX.medium == "svg" ) {
         VX.svg = document.getElementById( targetElementId );
         VX.svg.setAttribute("viewBox", `0 0 ${VX.interfaceWidth} ${VX.interfaceHeight}` );
+        VX.svgPointsAddedToDOM = false;
+        VX.svgSpansAddedToDOM = false;
         VX.svgSkinsAddedToDOM = false;
       }
     //3D
