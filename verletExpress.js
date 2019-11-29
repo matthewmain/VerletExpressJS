@@ -20,9 +20,10 @@ var VX = {
   viewPoints: false,  // point visibility (2D)
   viewSpans: false,  // span visibility (2D)
   viewSkins: true, // skin visibility (2D)
-  xRange: { min: null, max: null },  // min & max x values (objects bounce at values; null is infinite space
-  yRange: { min: null, max: null },  // min & max y values (objects bounce at values; null is infinite space
-  zRange: { min: null, max: null },  // min & max z values (objects bounce at values; null is infinite space 
+  xRange: { min: null, max: null },  // min & max x values (objects bounce at values; null is infinite space)
+  yRange: { min: null, max: null },  // min & max y values (objects bounce at values; null is infinite space)
+  zRange: { min: null, max: null },  // min & max z values (objects bounce at values; null is infinite space)
+  pointsCollide: true,  // whether points collide with one other or pass through one another
   gravity: 0.01,  // rate of y-velocity increase per frame per point mass of 1
   rigidity: 5,  // global span rigidity (as iterations of position accuracy refinement)
   friction: 0.999,  // proportion of previous velocity after frame refresh
@@ -56,6 +57,7 @@ var VX = {
     if ( VX.dimensions == "3d" ) { this.pz = this.cz; }  // previous z value
     this.mass = 1;  // (as ratio of gravity)
     this.width = 0;
+    this.color = "black";
     this.materiality = materiality;  // "material" points collide with obstacles; "immaterial" points don't
     this.fixed = false;  // whether the point moves in response to physics or remains in a fixed position
     this.id = VX.pointCount;
@@ -68,6 +70,7 @@ var VX = {
     if ( Number.isInteger( point2 ) ) { this.p2 = VX.getPoint( point2 ); } else { this.p2 = point2; }
     this.l = VX.distance( this.p1, this.p2 ); // length
     this.strength = 1;  // (as ratio of rigidity)
+    this.color = "lightgray";
     this.id = VX.spanCount;
   },
 
@@ -134,7 +137,7 @@ var VX = {
     }
   },
 
-  ///gets distance between two points
+  ///gets distance between two points' centers
   distance: function( point1, point2 ) {
     var xDiff = point2.cx - point1.cx;
     var yDiff = point2.cy - point1.cy;
@@ -146,6 +149,12 @@ var VX = {
       var xzDist = Math.sqrt( xyDist*xyDist + zDiff*zDiff );
       return xzDist;
     }
+  },
+
+  ///gets distance between two points' surfaces
+  surfaceDistance: function( point1, point2 ) {
+    var centerDist = VX.distance( point1, point2 );
+    return centerDist - ( point1.width/2 + point2.width/2 );
   },
 
   ///gets a point by id number
@@ -186,8 +195,8 @@ var VX = {
     }
   },
 
-  ///applies boundaries (objects bounce off of walls)
-  applyBoundaries: function() {
+  ///applies collisions (objects bounce off of walls and/or points bounce off one other)
+  applyCollisions: function() {
     for ( var i=0; i<VX.points.length; i++ ) {
       var p = VX.points[i];
       var pr = p.width/2;  // point radius
@@ -218,6 +227,30 @@ var VX = {
         } else if ( VX.zRange.max != null && p.cz > VX.zRange.max - pr ) {
           p.cz = VX.zRange.max - pr;
           p.pz = p.cz + zv * VX.bounceLoss;
+        }
+        //point collisions
+        if ( VX.pointsCollide ) {
+          for ( var j=0; j<VX.points.length; j++ ) {
+            var p2 = VX.points[j];  // second point
+            var xv2 = ( p2.cx - p2.px );  // marble 2 x velocity
+            var yv2 = ( p2.cy - p2.py );  // marble 2 y velocity
+            var zv2 = ( p2.cz - p2.pz );  // marble 2 z velocity
+            var cd = VX.distance( p, p2 );  // distance between point centers
+            var sd = VX.surfaceDistance( p, p2 );  // distance between surfaces
+            //if marbles are overlapping (and marble is not self),
+            if ( sd < 0 && p.id != p2.id ) { 
+              //get depth of overlap for x & y (based on ratio of sd/cd to x & y depth/diff)
+              var xDiff = p.cx - p2.cx;  // x difference between marbles
+              var yDiff = p.cy - p2.cy;  // y difference between marbles
+              var xDepth = xDiff * sd / cd;  // x depth of overlap
+              var yDepth = yDiff * sd / cd;  // y depth of overlap
+              //move marbles' x and y values back by half of shared depth each (altering velocities)
+              p.cx -= xDepth * 0.5;
+              p.cy -= yDepth * 0.5;
+              p2.cx += xDepth * 0.5;
+              p2.cy += yDepth * 0.5;
+            }
+          }
         }
       }
     }
@@ -266,7 +299,7 @@ var VX = {
     for ( var j=0; j<maxRequiredRefinementIterations; j++ ) {
       var currentRefinementIteration = j;
       VX.updateSpans( currentRefinementIteration );
-      VX.applyBoundaries();
+      VX.applyCollisions();
     }
   },
 
@@ -277,9 +310,9 @@ var VX = {
         var p = VX.points[i];
         var radius = p.width >= 2 ? p.width/2 : 1;
         VX.ctx.beginPath();
-        VX.ctx.fillStyle = "blue";
+        VX.ctx.fillStyle = p.color;
         VX.ctx.arc( p.cx, p.cy, radius, 0 , Math.PI*2 );
-        VX.ctx.fill(); 
+        VX.ctx.fill();
       }
     } else if ( VX.medium == "svg" ) {
       if ( !VX.svgPointsAddedToDOM ) {
@@ -288,7 +321,7 @@ var VX = {
           var pointCircle = document.createElementNS( "http://www.w3.org/2000/svg", "circle" );
           pointCircle.classList.add( "point" );
           pointCircle.id = "pt"+p.id;
-          pointCircle.fill = "blue";
+          pointCircle.fill = p.color;
           pointCircle.cx = p.cx;
           pointCircle.cy = p.cy;
           pointCircle.r = "1";
@@ -299,13 +332,12 @@ var VX = {
         for ( var i=0; i<VX.points.length; i++ ) {
           var p = VX.points[i];
           var pointCircle = document.getElementById( "pt"+p.id );
-          pointCircle.setAttribute( "fill", "blue" );
+          pointCircle.setAttribute( "fill", p.color );
           pointCircle.setAttribute( "cx", p.cx );
           pointCircle.setAttribute( "cy", p.cy );
           pointCircle.setAttribute( "r", 1 );
         }
       }
-
     }
   },
 
@@ -316,7 +348,7 @@ var VX = {
         var s = VX.spans[i];
         VX.ctx.beginPath();
         VX.ctx.lineWidth = "1";
-        VX.ctx.strokeStyle = "lightgray";
+        VX.ctx.strokeStyle = s.color;
         VX.ctx.moveTo(s.p1.cx, s.p1.cy);
         VX.ctx.lineTo(s.p2.cx, s.p2.cy);
         VX.ctx.stroke(); 
@@ -328,7 +360,7 @@ var VX = {
           var spanPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
           spanPath.classList.add( "span" );
           spanPath.id = "sp"+s.id;
-          spanPath.style.stroke = "lightgray";
+          spanPath.style.stroke = s.color;
           spanPath.style.strokeWidth = "1";
           var pathString = "M" + s.p1.cx + "," + s.p1.cy + " " + "L" + s.p2.cx + "," + s.p2.cy + " " + "Z";
           spanPath.setAttribute("d", pathString );

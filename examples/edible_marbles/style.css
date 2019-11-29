@@ -1,0 +1,67 @@
+body {
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#container_div {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+#button_div {
+  position: absolute;
+  width: 100%;
+  height: 20%; 
+}
+
+#release_button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 40%;
+  width: 15%;
+  border: none;
+  border-radius: 4px;
+  background: #999999;
+  font-size: 14px;
+  text-align: center;
+}
+
+#release_button:hover {
+  background: #888888;
+}
+
+*:focus {
+  outline: none;
+}
+
+#add_ball_icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 37%;
+}
+
+#canvas_div {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 78%;
+}
+
+#canvas {
+  position: absolute;
+  right: 50%;
+  top: 50%;
+  width: 100%;
+  transform: translate(50%,-50%);
+  border: solid 3px #555555;
+  border-radius: 10px;
+}
