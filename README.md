@@ -64,7 +64,7 @@ For example:
 var point1 = VX.addPoint( { x: 480, y: 10 } );
 ```
   
-**_Note: 2d y values correspond to canvas or SVG positions, so they_ increase _downwards. 3d y values Y values correspnd to a 3D axis, so they_ decrease _downwards._**
+**_Note: 2d Y values correspond to canvas or SVG positions, so they_ increase _downwards. 3d Y values correspnd to a 3D axis, so they_ decrease _downwards._**
 
 A point can be further configured by updating its `.mass` (defaults as 1 unit), `.width` (defaults as 0 units), or `.fixed` (whether a point is subject to physics and moveable or remains fixed at its current coordinates, defaults as false). 
 
@@ -98,12 +98,12 @@ Skins (2D only) provide a visible layer that corresponds to a series of points. 
 To create a new skin and add it to the physics environment, use `addSkin()` with two arguments:
 
 1. _points_ (array). An array or point objects or point ids as integers which the skin will cover.
-2. _styles_ (object: {fillColor: <string>, outlineColor: <string>, outlineThickness: <number or string>}). An object with values for the skin's fill color, outline color, and outline thickness.
+2. _styles_ (object: {fillColor: \<string\>, outlineColor: \<string\>, outlineThickness: \<number or string\>}). An object with values for the skin's fill color, outline color, and outline thickness.
   
 For example, to place a blue skin with a black outline over a square constructed from four points:
 
 ```
-var skin1 = VX.addSkins( [ point1, point2, point3 ], {fillColor: "blue", outlineColor: "#000000", outlineThickness: 1 } );
+var skin1 = VX.addSkin( [ point1, point2, point3 ], {fillColor: "blue", outlineColor: "#000000", outlineThickness: 1 } );
 ```
 
 <br>
@@ -140,25 +140,26 @@ A count of frames elapsed can be accessed using:
 
 A VerletExpressJS environment's point, spans, or skin collections can be accessed using the following, which return arrays of all current point, span, or skin objects:
 
-`VX.points`
-`VX.spans`
-`VX.skins`
+`VX.points` <br>
+`VX.spans` <br>
+`VX.skins` <br>
 
 To remove a point, span, or skin from the environment, use:
 
-`VX.removePoint( <point id> )`
-`VX.removeSpan( <span id> )`
-`VX.removeSkin( <skin id> )`
+`VX.removePoint( \<point id\> )` <br>
+`VX.removeSpan( \<span id\> )` <br>
+`VX.removeSkin( \<skin id\> )` <br>
 
 To get any point by id, use:
 
-`var myPoint = VX.getPoint( <point id> )`
+`var myPoint = VX.getPoint( \<point id\> )`
 
 To run any custom function at every frame refresh, update the `VX.runOnFrameRefresh` method:
 
 ```
 VX.runOnFrameRefresh = function() { 
   myCustomFunction();
+}
 ```
 
 
