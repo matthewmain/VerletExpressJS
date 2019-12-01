@@ -64,7 +64,7 @@ For example:
 var point1 = VX.addPoint( { x: 480, y: 10 } );
 ```
   
-**_Note: 2D Y values correspond to canvas or SVG coordinates, so they_ increase _downwards. 3D Y values correspnd to a 3D axis, so they_ decrease _downwards._**
+**_Note: 2D Y values correspond to canvas or SVG coordinates, so they_ increase _downwards. 3D Y values correspond to a 3D axis, so they_ decrease _downwards._**
 
 A point can be further configured by updating its `.mass` (defaults as 1 unit), `.width` (defaults as 0 units), or `.fixed` (whether a point is subject to physics and moveable or remains fixed at its current coordinates, defaults as false). 
 
