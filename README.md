@@ -1,32 +1,55 @@
+# VerletExpressJS
 
-#Verlet Express
+VerletExpressJS is a lightweight physics engine for 2D or 3D environments within canvas or svg elements.
 
-
-	+initiation
-  //dimensions can be "2d" or "3d"; 
-  //medium (2d only) can be "canvas" or "svg"
-  //targetElementId (2d only) should be an id associated with the target canvas or svg element
-  //interfaceWidth/Height (2d only) will set the canvas or svg element's dimensions
+<br>
 
 
-  +runOnFrameRefresh section
+## 2D
+
+Y values correspond to canvas or SVG positions, so they _increase_ downwards.
+
+### Initialization
+
+### Points
+
+### Spans
+
+### Skins
+
+pointsArray can be an array of point objects or point ids
+stylesObject: {fillColor: <string>, outlineColor: <string>, outlineThickness: <string>}
+
+<br>
 
 
-  +skins constructor 
-  //pointsArray can be an array of point objects or point ids
-  //stylesObject: {fillColor: <string>, outlineColor: <string>, outlineThickness: <string>}
+## Settings
 
+### Gravity...
 
-###2D
-
-Y values correspond to canvas positions, so they _increase_ downwards.
+<br>
 
 
 
-###3D
+## Options
 
-Y values corresppnd to 3D axis, so they _decrease_ downwards.
+runOnFrameRefresh()
+
+<br>
 
 
 
-+ADD POINT COLLISIONS; USE EDIBLE MARBLES AS TEST CASE/EXAMPLE
+## 3D
+
+Unlike 2D, needs to run alongside WebGL or a 3D engine like Three.js...
+Y values correspnd to 3D axis, so they _decrease_ downwards.
+
+
+
+
+
+
+
+
+
+
