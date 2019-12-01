@@ -168,12 +168,10 @@ VX.runOnFrameRefresh = function() {
 
 ## Live Examples
 
-...
-
-
-
-
-
+ * [**Rag Doll**](https://codepen.io/matthewmain/pen/oywOXB) (2D, canvas)
+ * [**Marble Jar**](https://codepen.io/matthewmain/pen/eKpLwB) (2D, canvas, with particle collisions)
+ * [**Explosion Icon**](https://codepen.io/matthewmain/pen/RwwooMG) (2D, SVG)
+ * [**Trapped Cube**](https://codepen.io/matthewmain/pen/KxWVWO) (3D, Three.js)
 
 
 
