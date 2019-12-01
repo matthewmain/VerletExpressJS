@@ -134,13 +134,33 @@ A VerletExpressJS environment can be further configured by adjusting the followi
 
 ## Options
 
-+object collections
-+worldtime
-+functions...
+A count of frames elapsed can be accessed using:
 
-runOnFrameRefresh()
+`VX.worldTime`
 
-<br>
+A VerletExpressJS environment's point, spans, or skin collections can be accessed using the following, which return arrays of all current point, span, or skin objects:
+
+`VX.points`
+`VX.spans`
+`VX.skins`
+
+To remove a point, span, or skin from the environment, use:
+
+`VX.removePoint( <point id> )`
+`VX.removeSpan( <span id> )`
+`VX.removeSkin( <skin id> )`
+
+To get any point by id, use:
+
+`var myPoint = VX.getPoint( <point id> )`
+
+To run any custom function at every frame refresh, update the `VX.runOnFrameRefresh` method:
+
+```
+VX.runOnFrameRefresh = function() { 
+  myCustomFunction();
+```
+
 
 
 
