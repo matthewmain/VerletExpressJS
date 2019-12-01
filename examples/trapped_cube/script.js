@@ -26,7 +26,6 @@ var timeNow = Math.floor(Date.now());  //tracks time in miliseconds
 VX.initialize( "3d" );
 VX.gravity = 0.25; 
 VX.skidLoss = 0.5;
-//VX.yRange.min = -containerWidth/2;
 
 
 
@@ -235,6 +234,7 @@ function render() {
   cube.geometry.verticesNeedUpdate = true;
   if ( VX.points[0].cy < -50000 ) { buildCube(cubeWidth); }
   updateVertices();
+  VX.applyBoundaries();
   if ( cubeInTheBox() ) { jump(jumpStrength,jumpFrequency); }
   camera.updateProjectionMatrix();
   renderer.render(scene,camera);

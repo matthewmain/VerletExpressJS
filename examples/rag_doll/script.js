@@ -13,7 +13,7 @@ let oc = "red"  // outline color
 let ot = "10"  // outline thickness
 
 ///VerletExpressJS
-VX.initialize( "2d", "canvas", "canvas-element", "1000", "1000" );
+VX.initialize( "2d", "canvas", "canvas-element", 1000, 1000 );
 VX.gravity = 0.25;
 VX.rigidity = 20;
 VX.skidLoss = 0.5;
