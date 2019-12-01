@@ -114,19 +114,19 @@ var skin1 = VX.addSkins( [ point1, point2, point3 ], {fillColor: "blue", outline
 
 A VerletExpressJS environment can be further configured by adjusting the following settings:
 
-`VX.viewPoints` (boolean). Whether points are visible (2D only; defaults as false).
-`VX.viewSpans` (boolean). Whether spans are visible (2D only; defaults as false).
-`VX.viewSkins` (boolean). Whether skins are visible (2D only; defaults as true).
-`VX.xRange` (object: { min: <integer>, max: <integer> }). The min & max X values that points can inhabit (objects bounce at values; null is infinite space).
-`VX.yRange` (object: { min: <integer>, max: <integer> }). The min & max Y values that points can inhabit (objects bounce at values; null is infinite space).
-`VX.zRange` (object: { min: <integer>, max: <integer> }). The min & max Z values that points can inhabit (3D only; objects bounce at values; null is infinite space).
-`VX.pointsCollide` (boolean). Whether points collide with one other or pass through one another (defaults as true).
-`VX.gravity` (number). The force of gravity (as rate of y-valocity increase per frame per point mass of one; defaults as 0.01).
-`VX.rigidity` (number). The global span strength (as iterations of position accuracy refinement; defaults as 5).
-`VX.friction` (number): The force of friction as points pass through space (as proportion of previous velocity after frame refresh; defaults as 0.999).
-`VX.bounceLoss` (number). The affect of bouncing on a point's velocity (as proportion of previous velocity after bouncing; defaults as 0.9).
-`VX.skidLoss` (number). The affect of skidding on a point's velocity (as proportion of previous velocity after skidding; defaults as 0.9).
-`VX.breeze` (number). The air's breeziness level (applied as brief, randomized left & right gusts; defaults as 0).
+`VX.viewPoints` (boolean). Whether points are visible (2D only; defaults as false). <br>
+`VX.viewSpans` (boolean). Whether spans are visible (2D only; defaults as false). <br>
+`VX.viewSkins` (boolean). Whether skins are visible (2D only; defaults as true). <br>
+`VX.xRange` (object: { min: <integer>, max: <integer> }). The min & max X values that points can inhabit (objects bounce at values; null is infinite space). <br>
+`VX.yRange` (object: { min: <integer>, max: <integer> }). The min & max Y values that points can inhabit (objects bounce at values; null is infinite space). <br>
+`VX.zRange` (object: { min: <integer>, max: <integer> }). The min & max Z values that points can inhabit (3D only; objects bounce at values; null is infinite space). <br>
+`VX.pointsCollide` (boolean). Whether points collide with one other or pass through one another (defaults as true). <br>
+`VX.gravity` (number). The force of gravity (as rate of y-valocity increase per frame per point mass of one; defaults as 0.01). <br>
+`VX.rigidity` (number). The global span strength (as iterations of position accuracy refinement; defaults as 5). <br>
+`VX.friction` (number): The force of friction as points pass through space (as proportion of previous velocity after frame refresh; defaults as 0.999). <br>
+`VX.bounceLoss` (number). The affect of bouncing on a point's velocity (as proportion of previous velocity after bouncing; defaults as 0.9). <br>
+`VX.skidLoss` (number). The affect of skidding on a point's velocity (as proportion of previous velocity after skidding; defaults as 0.9). <br>
+`VX.breeze` (number). The air's breeziness level (applied as brief, randomized left & right gusts; defaults as 0). <br>
 
 <br>
 <br>
