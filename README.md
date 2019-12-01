@@ -146,13 +146,13 @@ A VerletExpressJS environment's point, spans, or skin collections can be accesse
 
 To remove a point, span, or skin from the environment, use:
 
-`VX.removePoint( \<point id\> )` <br>
-`VX.removeSpan( \<span id\> )` <br>
-`VX.removeSkin( \<skin id\> )` <br>
+`VX.removePoint( <point id> )` <br>
+`VX.removeSpan( <span id> )` <br>
+`VX.removeSkin( <skin id> )` <br>
 
 To get any point by id, use:
 
-`var myPoint = VX.getPoint( \<point id\> )`
+`var myPoint = VX.getPoint( <point id> )`
 
 To run any custom function at every frame refresh, update the `VX.runOnFrameRefresh` method:
 
