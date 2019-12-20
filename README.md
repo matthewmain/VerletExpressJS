@@ -37,7 +37,7 @@ To establish a 2D physics environment, use `VX.initialize()` with five arguments
 For example, to initialize a 2D physics environment of 1000 units by 1000 units in an established canvas element with an id of "physics-interface", use the following: 
 
 ```
-VX.initialize( "2d", "canvas", "physics-interface", "1000", "1000" );
+VX.initialize( "2d", "canvas", "physics-interface", 1000, 1000 );
 ```
 
 To establish a 3D physics enviroment, use `VX.initialize()` with just one argument, "3d". To display a three-dimensional scene, you will need to first build it using WebGL or a library such as [ThreeJS](https://threejs.org/).
