@@ -127,6 +127,7 @@ A VerletExpressJS environment can be further configured by adjusting the followi
 `VX.bounceLoss` (number). The affect of bouncing on a point's velocity (as proportion of previous velocity after bouncing; defaults as 0.9). <br>
 `VX.skidLoss` (number). The affect of skidding on a point's velocity (as proportion of previous velocity after skidding; defaults as 0.9). <br>
 `VX.breeze` (number). The air's breeziness level (applied as brief, randomized left & right gusts; defaults as 0). <br>
+`VX.paintFrequency` (integer). Frequency that positions are calculated per canvas update (higher = better performance, lower = smoother animations; defaults as 1). <br>
 
 <br>
 <br>
