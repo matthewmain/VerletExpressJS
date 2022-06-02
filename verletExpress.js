@@ -25,7 +25,9 @@ var VX = {
   skidLoss: 0.9,  // proportion of previous velocity if touching the ground
   breeze: 0,  // breeziness level (applied as brief, randomized left & right gusts)
   paintFrequency: 1,  // frequency positions are calculated per canvas update (higher=performance, lower=smoother animations)
-
+  throttleInterval: 0,  // throttle iterations to this time period, in milliseconds (use for animations that run too fast or inconsistently across browsers)
+  now: 0,
+  lastIteration: 0,
 
 
   ////---TRACKERS---////
@@ -494,17 +496,25 @@ var VX = {
   ////---EXECUTION---////
 
   run: function() {
-    VX.worldTime++;
-    VX.updatePoints();
-    VX.refinePositions();
-    VX.runOnFrameRefresh();
-    if ( VX.worldTime % VX.paintFrequency == 0 ) {
-      VX.clearCanvas();
-      VX.renderImages();
-      window.requestAnimationFrame( VX.run );
+    VX.now = Date.now();
+    if ( VX.now - VX.lastIteration >= VX.throttleInterval ) {
+      VX.worldTime++;
+      VX.updatePoints();
+      VX.refinePositions();
+      VX.runOnFrameRefresh();
+      if ( VX.worldTime % VX.paintFrequency == 0 ) {
+        VX.clearCanvas();
+        VX.renderImages();
+        window.requestAnimationFrame( VX.run );
+      } else {
+        VX.run();
+      }
+      VX.lastIteration = Date.now();
     } else {
-      VX.run();
+      setTimeout( VX.run, VX.throttleInterval-(VX.now-VX.lastIteration) );
     }
+              
+
   },
 
 
