@@ -1,14 +1,8 @@
 
 
-////////////////////////////////////////////////////////////////
-////////////////////  Verlet Express JS  ///////////////////////
-////////////////////////////////////////////////////////////////
-
-// A lightweight Verlet integration physics engine for 2D or 3D scenes.
-// © Matthew Main 2019
+///////////////////////////////// VERLETEXPRESS.JS /////////////////////////////////
 
 
- 
 
 var VX = {
 
@@ -30,6 +24,7 @@ var VX = {
   bounceLoss: 0.9,  // proportion of previous velocity after bouncing
   skidLoss: 0.9,  // proportion of previous velocity if touching the ground
   breeze: 0,  // breeziness level (applied as brief, randomized left & right gusts)
+  paintFrequency: 1,  // frequency positions are calculated per canvas update (higher=performance, lower=smoother animations)
 
 
 
@@ -499,19 +494,22 @@ var VX = {
   ////---EXECUTION---////
 
   run: function() {
+    VX.worldTime++;
     VX.updatePoints();
     VX.refinePositions();
-    VX.clearCanvas();
-    VX.renderImages();
     VX.runOnFrameRefresh();
-    VX.worldTime++;
-    window.requestAnimationFrame( VX.run );
+    if ( VX.worldTime % VX.paintFrequency == 0 ) {
+      VX.clearCanvas();
+      VX.renderImages();
+      window.requestAnimationFrame( VX.run );
+    } else {
+      VX.run();
+    }
   },
 
 
 
 }
-
 
 
 
