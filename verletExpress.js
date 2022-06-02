@@ -26,8 +26,6 @@ var VX = {
   breeze: 0,  // breeziness level (applied as brief, randomized left & right gusts)
   paintFrequency: 1,  // frequency positions are calculated per canvas update (higher=performance, lower=smoother animations)
   throttleInterval: 0,  // throttle iterations to this time period, in milliseconds (use for animations that run too fast or inconsistently across browsers)
-  now: 0,
-  lastIteration: 0,
 
 
   ////---TRACKERS---////
@@ -36,7 +34,7 @@ var VX = {
   points: [], pointCount: 0,
   spans: [], spanCount: 0,
   skins: [], skinCount: 0,
-  worldTime: 0,
+  worldTime: 0, now: 0, lastIteration: 0,
 
 
 
@@ -513,8 +511,6 @@ var VX = {
     } else {
       setTimeout( VX.run, VX.throttleInterval-(VX.now-VX.lastIteration) );
     }
-              
-
   },
 
 
